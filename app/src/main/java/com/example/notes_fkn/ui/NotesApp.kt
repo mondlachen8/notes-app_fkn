@@ -39,16 +39,29 @@ fun NotesApp() {
             )
         }
 
+        composable(Routes.EDIT_NOTE) {
+            EditNoteScreen(
+                note = null,
+                onSave = { savedNote ->
+                    viewModel.saveNote(savedNote)
+                    navController.popBackStack()
+                },
+                onCancel = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(
             route = "${Routes.EDIT_NOTE}/{noteId}",
             arguments = listOf(
                 navArgument("noteId") {
                     type = NavType.LongType
-                    nullable = true
                 }
             )
         ) {backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId")
+            //val note = noteId?.let { viewModel.getNoteById(it) }
             val note = noteId?.let { viewModel.getNoteById(it) }
 
             EditNoteScreen(

@@ -20,8 +20,8 @@ fun EditNoteTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .padding(horizontal = 16.dp),
+                .height(128.dp)
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
