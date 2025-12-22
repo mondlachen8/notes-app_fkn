@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.notes_fkn.ui.NotesApp
 import com.example.notes_fkn.ui.theme.Notes_fknTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Notes_fknTheme {
-                val notes = listOf(
+                /**val notes = listOf(
                     Note(1, "Einkauf", "Milch, Brot, Eier"),
                     Note(2, "Idee", "Notiz-App mit Compose bauen")
                 )
@@ -49,75 +50,17 @@ class MainActivity : ComponentActivity() {
                     onNoteClick = {
                         // später: Bearbeiten
                     }
-                )
+                )*/
+                NotesApp()
             }
         }
     }
 }
-
-data class Note(
-    val id: Long,
-    val title: String,
-    val content: String
-)
-
-@Composable
-fun NotesList(
-    notes: List<Note>,
-    onAddNote: () -> Unit,
-    onNoteClick: (Note) -> Unit
-) {
-    Scaffold(
-        topBar = { NotesTopBar("Notizen") },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddNote) {
-                Icon(Icons.Default.Add, contentDescription = "Notiz hinzufügen")
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            contentPadding = paddingValues
-        ) {
-            items(notes) { note ->
-                NoteItem(note = note, onClick = { onNoteClick(note) })
-            }
-        }
-    }
-}
-
-@Composable
-fun NoteItem(
-    note: Note,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = note.title,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = note.content,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2
-            )
-        }
-    }
-}
-
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     Notes_fknTheme {
-        val notes = listOf(
+        /**val notes = listOf(
             Note(1, "Einkauf", "Milch, Brot, Eier"),
             Note(2, "Idee", "Notiz-App mit Compose bauen")
         )
@@ -130,25 +73,7 @@ fun GreetingPreview() {
             onNoteClick = {
                 // später: Bearbeiten
             }
-        )
-    }
-}
-
-@Composable
-fun NotesTopBar(textInput: String) {
-    Surface(
-        tonalElevation = 3.dp
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = textInput,
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
+        )*/
+        NotesApp()
     }
 }
