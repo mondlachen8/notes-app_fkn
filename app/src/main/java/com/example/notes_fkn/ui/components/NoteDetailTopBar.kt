@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,8 @@ fun NoteDetailTopBar(
     title: String,
     onBack: () -> Unit,
     onEdit: () -> Unit,
-    onDelete:( () -> Unit)? = null
+    onDelete:( () -> Unit)? = null,
+    onShare: (() -> Unit)? = null
 ) {
     Surface (
         tonalElevation = 3.dp
@@ -65,6 +67,11 @@ fun NoteDetailTopBar(
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
                             Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        }
+                    }
+                    if (onShare != null) {
+                        IconButton(onClick = onShare) {
+                            Icon(Icons.Default.Share, contentDescription = "Teilen")
                         }
                     }
                 }

@@ -29,6 +29,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
+import java.io.File
 import com.example.notes_fkn.model.Note
 import com.example.notes_fkn.ui.components.NoteDetailTopBar
 import com.example.notes_fkn.model.TextSpan
@@ -40,6 +44,9 @@ fun NoteDetailScreen(
     onEdit: (updatedContent: String) -> Unit,
     onDeleteConfirmed: () -> Unit
 ) {
+    val context = LocalContext.current
+    var showShareDialog by remember { mutableStateOf(false) }
+
     var showDeleteDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     var content by remember(note.id) {
@@ -51,6 +58,34 @@ fun NoteDetailScreen(
 
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
+    fun shareAsText() {
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, note.content)
+            type = "text/plain"
+        }
+        context.startActivity(Intent.createChooser(sendIntent, "Notiz teilen"))
+    }
+
+    fun shareAsFile() {
+        val fileName = "$note.title.ifBlank { \"Notiz\" }.txt"
+        val file = File(context.cacheDir, fileName)
+        file.writeText(note.content)
+
+        val uri = FileProvider.getUriForFile(
+            context,
+            context.packageName + ".fileprovider",
+            file
+        )
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, uri)
+            type = "text/plain"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(sendIntent, "Notiz als Datei teilen"))
+    }
 
     Scaffold(
         topBar = {
@@ -61,7 +96,8 @@ fun NoteDetailScreen(
                 //onDelete = onDeleteConfirmed
                 onDelete = if (note.isPinned) null else {{
                         showDeleteDialog = true
-                    }}
+                    }},
+                onShare = {showShareDialog = true}
             )
         }
     ) { paddingValues ->
@@ -135,6 +171,41 @@ fun NoteDetailScreen(
             }
         }
     }
+
+    if (showShareDialog) {
+        AlertDialog(
+            onDismissRequest = { showShareDialog = false },
+            title = { Text("Notiz teilen") },
+            text = {
+                Column {
+                    TextButton(
+                        onClick = {
+                            showShareDialog = false
+                            shareAsText()
+                        }
+                    ) {
+                        Text("Als Text teilen / kopieren")
+                    }
+
+                    TextButton(
+                        onClick = {
+                            showShareDialog = false
+                            shareAsFile()
+                        }
+                    ) {
+                        Text("Als .txt Datei teilen")
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showShareDialog = false }) {
+                    Text("Abbrechen")
+                }
+            }
+        )
+    }
+
 }
 
 fun buildAnnotatedContentWithTodos(
