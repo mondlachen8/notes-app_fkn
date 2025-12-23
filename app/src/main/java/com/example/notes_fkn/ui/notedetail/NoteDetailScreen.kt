@@ -1,6 +1,5 @@
 package com.example.notes_fkn.ui.notedetail
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -29,12 +27,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notes_fkn.model.Note
 import com.example.notes_fkn.ui.components.NoteDetailTopBar
-import com.example.notes_fkn.ui.editnote.buildAnnotatedContent
 import com.example.notes_fkn.model.TextSpan
 
 @Composable
@@ -43,16 +39,13 @@ fun NoteDetailScreen(
     onBack: (updatedContent: String) -> Unit,
     onEdit: (updatedContent: String) -> Unit,
     onDeleteConfirmed: () -> Unit
-    //onTodoClick: (lineIndex: Int) -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-    //val annotated = buildTodoAnnotatedString(note.content, note.spans)
     var content by remember(note.id) {
         mutableStateOf(note.content)
     }
     val annotated = remember(content, note.spans) {
-        //buildTodoAnnotatedString(content, note.spans)
         buildAnnotatedContentWithTodos(content, note.spans)
     }
 
@@ -102,14 +95,12 @@ fun NoteDetailScreen(
                                         content = content,
                                         lineIndex = lineIndex
                                     )
-                                    //onTodoClick(annotations.first().item.toInt())
                                 }
                             }
                         }
                     }
             ) {
                 Text(
-                    //text = buildAnnotatedContent(note.content, note.spans),
                     text = annotated,
                     style = MaterialTheme.typography.bodyLarge,
                     onTextLayout = { result ->
@@ -141,52 +132,6 @@ fun NoteDetailScreen(
                         }
                     }
                 )
-            }
-        }
-    }
-}
-
-fun buildTodoAnnotatedString(
-    content: String,
-    spans: List<TextSpan>): AnnotatedString {
-    return buildAnnotatedString {
-        /**content.lines().forEachIndexed { index, line ->
-            val trimmed = line.trimStart()
-
-            // TODO-Zeile erkennen
-            if (trimmed.startsWith("[ ]") || trimmed.startsWith("[x]")) {
-                pushStringAnnotation(tag = "TODO", annotation = index.toString())
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Normal, fontSize = 16.sp)) {
-                    append(line)
-                }
-                pop()
-            } else {
-                append(line)
-            }
-            append("\n")
-        }*/
-        val lines = content.split("\n")
-        lines.forEachIndexed{ index, line ->
-            val trimmed = line.trimStart()
-            val isTodo = trimmed.startsWith("[ ]") ||
-                        trimmed.startsWith("[x]")
-            val start = length
-
-            append(line)
-
-            val end = length
-
-            if (isTodo) {
-                addStringAnnotation(
-                    tag = "TODO",
-                    annotation = index.toString(),
-                    start = start,
-                    end = end
-                )
-            }
-
-            if (index < lines.lastIndex) {
-                append("\n")
             }
         }
     }

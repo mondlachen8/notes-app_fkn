@@ -34,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.room.util.copy
 import com.example.notes_fkn.model.Note
 import com.example.notes_fkn.model.TextSpan
 import com.example.notes_fkn.model.hasStyleInSelection
@@ -58,41 +57,9 @@ fun EditNoteScreen(
     // Fett-/Kursiv-Spans
     var spans by remember { mutableStateOf(note?.spans ?: listOf())}
 
-    // Fett/Kursiv Status für gesamten Text (vereinfacht)
     var isBold by rememberSaveable { mutableStateOf(false) }
     var isItalic by rememberSaveable { mutableStateOf(false) }
-    /**fun applyStyle(style: Style) {
-        val start = textFieldValue.selection.start
-        val end = textFieldValue.selection.end
 
-        if (start == end) return // keine Auswahl
-
-        val builder = AnnotatedString.Builder(textFieldValue.text)
-        when (style) {
-            Style.BOLD -> builder.addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, end)
-            Style.ITALIC -> builder.addStyle(SpanStyle(fontStyle = FontStyle.Italic), start, end)
-        }
-
-        textFieldValue = textFieldValue.copy(text = builder.toAnnotatedString().text)
-    }*/
-    /**fun applyStyleToSelection(
-        bold: Boolean = false,
-        italic: Boolean = false,
-        fontSize: Float = 16f
-    ) {
-        val start = textFieldValue.selection.start
-        val end = textFieldValue.selection.end
-
-        if (start == end) return
-
-        spans = spans + TextSpan(
-            start = start,
-            end = end,
-            bold = bold,
-            italic = italic,
-            fontSize = fontSize
-        )
-    }*/
     fun toggleStyle(
         style: Style
     ) {
@@ -143,10 +110,8 @@ fun EditNoteScreen(
         val lineText = text.substring(lineStart, lineEnd)
 
         val newLineText = if (lineText.trimStart().startsWith("[ ] ")) {
-            // TODO schon vorhanden → entfernen
-            lineText.replaceFirst("\\[ \\] ".toRegex(), "")
+            lineText.replaceFirst("\\[ ] ".toRegex(), "")
         } else {
-            // TODO einfügen
             "  [ ] $lineText"
         }
 
@@ -253,10 +218,7 @@ fun EditNoteScreen(
             ) {
 
                 OutlinedTextField(
-                    //value = content,
                     value = textFieldValue,
-                    //onValueChange = { content = it },
-                    //onValueChange = { textFieldValue = it},
                     onValueChange = { newValue ->
                         content = newValue.text
                         textFieldValue = newValue

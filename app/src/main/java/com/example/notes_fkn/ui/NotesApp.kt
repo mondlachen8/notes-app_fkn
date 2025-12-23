@@ -15,16 +15,12 @@ import com.example.notes_fkn.ui.editnote.EditNoteScreen
 import com.example.notes_fkn.ui.navigation.Routes
 import com.example.notes_fkn.ui.notedetail.NoteDetailScreen
 import com.example.notes_fkn.ui.noteslist.NotesList
-import kotlinx.coroutines.newSingleThreadContext
 
 @Composable
 fun NotesApp() {
 
     val navController = rememberNavController()
-    //var notes by remember { mutableStateOf(listOf<Note>()) }
-    //val viewModel: NotesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val viewModel: NotesViewModel = viewModel()
-    val notes by viewModel.notes.collectAsState()
 
 
     NavHost(
@@ -40,7 +36,6 @@ fun NotesApp() {
                     navController.navigate(Routes.EDIT_NOTE)
                 },
                 onNoteClick = { note ->
-                    //navController.navigate("${Routes.EDIT_NOTE}/${note.id}")
                     navController.navigate("${Routes.NOTE_DETAIL}/${note.id}")
                 }
             )
@@ -77,10 +72,7 @@ fun NotesApp() {
                                 inclusive = true
                             }
                         }
-                    },
-                    /**onTodoClick = { lineIndex ->
-                        viewModel.toggleTodoAtLine(note.id, lineIndex)
-                    }*/
+                    }
                 )
             } else{
                 //Note existiert nicht mehr
@@ -99,7 +91,6 @@ fun NotesApp() {
                     navController.navigate("${Routes.NOTE_DETAIL}/${savedNote.id}") {
                         popUpTo(Routes.NOTES_LIST)
                     }
-                    //navController.popBackStack()
                 },
                 onCancel = {
                     navController.popBackStack()
@@ -116,14 +107,10 @@ fun NotesApp() {
             )
         ) {backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId")
-            //val note = noteId?.let { viewModel.getNoteById(it) }
             val note = noteId?.let { viewModel.getNoteById(it) }
 
             EditNoteScreen(
-                note = note, // kommt im nächsten Schritt aus ViewModel
-                /**onSave = {
-                    navController.popBackStack()
-                },*/
+                note = note,
                 onSave = { savedNote ->
                     viewModel.saveNote(savedNote)
                     navController.popBackStack()
