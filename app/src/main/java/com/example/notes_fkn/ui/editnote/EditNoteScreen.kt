@@ -1,7 +1,12 @@
 package com.example.notes_fkn.ui.editnote
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material3.Icon
@@ -18,8 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -27,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.util.copy
 import com.example.notes_fkn.model.Note
 import com.example.notes_fkn.model.TextSpan
 import com.example.notes_fkn.model.hasStyleInSelection
@@ -124,6 +132,35 @@ fun EditNoteScreen(
             )
         }
     }
+    fun toggleTodoAtCursor() {
+        val start = textFieldValue.selection.start
+        val text = textFieldValue.text
+
+        // Zeilenanfang der aktuellen Zeile finden
+        val lineStart = text.lastIndexOf('\n', start - 1).let { if (it == -1) 0 else it + 1 }
+        val lineEnd = text.indexOf('\n', start).let { if (it == -1) text.length else it }
+
+        val lineText = text.substring(lineStart, lineEnd)
+
+        val newLineText = if (lineText.trimStart().startsWith("[ ] ")) {
+            // TODO schon vorhanden → entfernen
+            lineText.replaceFirst("\\[ \\] ".toRegex(), "")
+        } else {
+            // TODO einfügen
+            "  [ ] $lineText"
+        }
+
+        // Text ersetzen
+        val newText = text.replaceRange(lineStart, lineEnd, newLineText)
+        textFieldValue = textFieldValue.copy(
+            text = newText,
+            selection = TextRange(
+                start = lineStart + newLineText.length,
+                end = lineStart + newLineText.length
+            )
+        )
+    }
+
 
 
 
@@ -199,14 +236,6 @@ fun EditNoteScreen(
             // Fett / Kursiv Buttons
             Row {
                 IconButton(onClick = {
-                    /**val selection = textFieldValue.selection
-                    if (!selection.collapsed) {
-                        spans = spans + TextSpan(
-                            start = selection.start,
-                            end = selection.end,
-                            bold = !isBold
-                        )
-                    }*/
                     isBold = !isBold
                     //applyStyleToSelection(bold = isBold)
                     toggleStyle(Style.BOLD)
@@ -214,74 +243,62 @@ fun EditNoteScreen(
                     Icon(Icons.Default.FormatBold, contentDescription = "Fett")
                 }
                 IconButton(onClick = {
-                    /*val selection = textFieldValue.selection
-                    if (!selection.collapsed) {
-                        spans = spans + TextSpan(
-                            start = selection.start,
-                            end = selection.end,
-                            italic = !isItalic
-                       )
-                    }*/
                     isItalic = !isItalic
                     //applyStyleToSelection(italic = isItalic)
                     toggleStyle(Style.ITALIC)
                 }) {
                     Icon(Icons.Default.FormatItalic, contentDescription = "Kursiv")
                 }
+                IconButton(onClick = { toggleTodoAtCursor() }) {
+                    Icon(Icons.Default.CheckBoxOutlineBlank, contentDescription = "TODO")
+                }
             }
-
-            OutlinedTextField(
-                //value = content,
-                value = textFieldValue,
-                //onValueChange = { content = it },
-                //onValueChange = { textFieldValue = it},
-                onValueChange = { newValue ->
-                    content = newValue.text
-                    textFieldValue = newValue
-                },
-                label = { Text("Inhalt") },
+            val scrollState = rememberScrollState()
+            Column (
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                textStyle = TextStyle(fontSize = textSize.sp),
-                maxLines = Int.MAX_VALUE
-            )
-            /**
-            Row {
-                IconButton(onClick = { applyStyle(Style.BOLD) }) {
-                    Icon(Icons.Default.FormatBold, contentDescription = "Fett")
-                }
-                IconButton(onClick = { applyStyle(Style.ITALIC) }) {
-                    Icon(Icons.Default.FormatItalic, contentDescription = "Kursiv")
-                }
-            }*/
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
 
-            // Vorschau mit angewendeten Spans
-            Spacer(modifier = Modifier.height(12.dp))
-            Text("Vorschau:")
-            /**val annotatedPreview = buildAnnotatedString {
-                append(textFieldValue.text)
-                spans.forEach { span ->
-                    addStyle(
-                        SpanStyle(
-                            fontWeight = if (span.bold) FontWeight.Bold else null,
-                            fontStyle = if (span.italic) FontStyle.Italic else null,
-                            fontSize = textSize.sp,
-                        ),
-                        span.start,
-                        span.end
+                OutlinedTextField(
+                    //value = content,
+                    value = textFieldValue,
+                    //onValueChange = { content = it },
+                    //onValueChange = { textFieldValue = it},
+                    onValueChange = { newValue ->
+                        content = newValue.text
+                        textFieldValue = newValue
+                    },
+                    label = { Text("Inhalt") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(scrollState),
+                    textStyle = TextStyle(fontSize = textSize.sp),
+                    maxLines = Int.MAX_VALUE
+                )
+
+                // Vorschau mit angewendeten Spans
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Vorschau:")
+                Box (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(scrollState)
+                        .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        //annotatedPreview,
+                        text = buildAnnotatedContent(content, spans),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     )
                 }
-            }*/
-
-            Text(
-                //annotatedPreview,
-                text = buildAnnotatedContent(content, spans),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            )
+            }
         }
     }
 }

@@ -4,5 +4,6 @@ data class Note(
     val id: Long,
     val title: String,
     val content: String,
-    val spans: List<TextSpan>
+    val spans: List<TextSpan>,
+    val lastModified: Long = System.currentTimeMillis()
 )

@@ -15,6 +15,7 @@ import com.example.notes_fkn.ui.editnote.EditNoteScreen
 import com.example.notes_fkn.ui.navigation.Routes
 import com.example.notes_fkn.ui.notedetail.NoteDetailScreen
 import com.example.notes_fkn.ui.noteslist.NotesList
+import kotlinx.coroutines.newSingleThreadContext
 
 @Composable
 fun NotesApp() {
@@ -56,8 +57,17 @@ fun NotesApp() {
             if (note != null) {
                 NoteDetailScreen(
                     note = note, // must not be null
-                    onBack = { navController.popBackStack() },
-                    onEdit = {
+                    onBack = { updatedContent ->
+                        viewModel.updateNoteContent(
+                            noteId = note.id,
+                            newContent = updatedContent
+                        )
+                        navController.popBackStack() },
+                    onEdit = { updatedContent ->
+                        viewModel.updateNoteContent(
+                                noteId = note.id,
+                                newContent = updatedContent
+                                )
                         navController.navigate("${Routes.EDIT_NOTE}/${noteId}")
                     },
                     onDeleteConfirmed = {
@@ -67,7 +77,10 @@ fun NotesApp() {
                                 inclusive = true
                             }
                         }
-                    }
+                    },
+                    /**onTodoClick = { lineIndex ->
+                        viewModel.toggleTodoAtLine(note.id, lineIndex)
+                    }*/
                 )
             } else{
                 //Note existiert nicht mehr
