@@ -3,6 +3,7 @@ package com.example.notes_fkn.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,8 +20,9 @@ fun NotesApp() {
 
     val navController = rememberNavController()
     //var notes by remember { mutableStateOf(listOf<Note>()) }
-    val viewModel: NotesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-
+    //val viewModel: NotesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val viewModel: NotesViewModel = viewModel()
+    val notes by viewModel.notes.collectAsState()
 
     NavHost(
         navController = navController,
