@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -27,13 +28,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notes_fkn.model.Note
-
-data class TextSpan(
-    val start: Int,
-    val end: Int,
-    val bold: Boolean = false,
-    val italic: Boolean = false
-)
+import com.example.notes_fkn.model.TextSpan
+import com.example.notes_fkn.model.hasStyleInSelection
+import com.example.notes_fkn.model.removeStyleFromSelection
 
 @Composable
 fun EditNoteScreen(
@@ -42,10 +39,10 @@ fun EditNoteScreen(
     onCancel: () -> Unit
 ) {
     var title by rememberSaveable { mutableStateOf(note?.title ?: "") }
-    //var content by rememberSaveable { mutableStateOf(note?.content ?: "") }
+    var content by rememberSaveable { mutableStateOf(note?.content ?: "") }
 
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(note?.content ?: ""))
+        mutableStateOf(TextFieldValue(content))
     }
     // Textgröße global
     var textSize by rememberSaveable { mutableStateOf(16f) }
@@ -56,7 +53,7 @@ fun EditNoteScreen(
     // Fett/Kursiv Status für gesamten Text (vereinfacht)
     var isBold by rememberSaveable { mutableStateOf(false) }
     var isItalic by rememberSaveable { mutableStateOf(false) }
-    fun applyStyle(style: Style) {
+    /**fun applyStyle(style: Style) {
         val start = textFieldValue.selection.start
         val end = textFieldValue.selection.end
 
@@ -69,7 +66,65 @@ fun EditNoteScreen(
         }
 
         textFieldValue = textFieldValue.copy(text = builder.toAnnotatedString().text)
+    }*/
+    fun applyStyleToSelection(
+        bold: Boolean = false,
+        italic: Boolean = false,
+        fontSize: Float = 16f
+    ) {
+        val start = textFieldValue.selection.start
+        val end = textFieldValue.selection.end
+
+        if (start == end) return
+
+        spans = spans + TextSpan(
+            start = start,
+            end = end,
+            bold = bold,
+            italic = italic,
+            fontSize = fontSize
+        )
     }
+    fun toggleStyle(
+        style: Style
+    ) {
+        val start = textFieldValue.selection.start
+        val end = textFieldValue.selection.end
+
+        if (start == end) return
+
+        val isAlreadyStyled = hasStyleInSelection(
+            spans = spans,
+            start = start,
+            end = end
+        ) { span ->
+            when (style) {
+                Style.BOLD -> span.bold
+                Style.ITALIC -> span.italic
+            }
+        }
+
+        spans = if (isAlreadyStyled) {
+            removeStyleFromSelection(
+                spans = spans,
+                start = start,
+                end = end
+            ) { span ->
+                when (style) {
+                    Style.BOLD -> span.bold
+                    Style.ITALIC -> span.italic
+                }
+            }
+        } else {
+            spans + TextSpan(
+                start = start,
+                end = end,
+                bold = style == Style.BOLD,
+                italic = style == Style.ITALIC
+            )
+        }
+    }
+
 
 
     Scaffold(
@@ -101,11 +156,13 @@ fun EditNoteScreen(
                     }
                     val editedNote = note?.copy(
                         title = title,
-                        content = annotatedText.text
+                        content = annotatedText.text,
+                        spans = spans
                     ) ?: Note(
                         id = System.currentTimeMillis(),
                         title = title,
-                        content = annotatedText.text
+                        content = annotatedText.text,
+                        spans = spans
                     )
                     onSave(editedNote)
                 },
@@ -141,39 +198,33 @@ fun EditNoteScreen(
 
             // Fett / Kursiv Buttons
             Row {
-                /**IconButton(onClick = { isBold = !isBold }) {
-                Icon(
-                imageVector = Icons.Filled.FormatBold,
-                contentDescription = "Fett"
-                )
-                }*/
                 IconButton(onClick = {
-                    val selection = textFieldValue.selection
+                    /**val selection = textFieldValue.selection
                     if (!selection.collapsed) {
                         spans = spans + TextSpan(
                             start = selection.start,
                             end = selection.end,
                             bold = !isBold
                         )
-                    }
+                    }*/
+                    isBold = !isBold
+                    //applyStyleToSelection(bold = isBold)
+                    toggleStyle(Style.BOLD)
                 }){
                     Icon(Icons.Default.FormatBold, contentDescription = "Fett")
                 }
-                /**IconButton(onClick = { isItalic = !isItalic }) {
-                Icon(
-                imageVector = Icons.Filled.FormatItalic,
-                contentDescription = "Kursiv"
-                )
-                }*/
                 IconButton(onClick = {
-                    val selection = textFieldValue.selection
+                    /*val selection = textFieldValue.selection
                     if (!selection.collapsed) {
                         spans = spans + TextSpan(
                             start = selection.start,
                             end = selection.end,
                             italic = !isItalic
-                        )
-                    }
+                       )
+                    }*/
+                    isItalic = !isItalic
+                    //applyStyleToSelection(italic = isItalic)
+                    toggleStyle(Style.ITALIC)
                 }) {
                     Icon(Icons.Default.FormatItalic, contentDescription = "Kursiv")
                 }
@@ -183,7 +234,11 @@ fun EditNoteScreen(
                 //value = content,
                 value = textFieldValue,
                 //onValueChange = { content = it },
-                onValueChange = { textFieldValue = it},
+                //onValueChange = { textFieldValue = it},
+                onValueChange = { newValue ->
+                    content = newValue.text
+                    textFieldValue = newValue
+                },
                 label = { Text("Inhalt") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -204,7 +259,7 @@ fun EditNoteScreen(
             // Vorschau mit angewendeten Spans
             Spacer(modifier = Modifier.height(12.dp))
             Text("Vorschau:")
-            val annotatedPreview = buildAnnotatedString {
+            /**val annotatedPreview = buildAnnotatedString {
                 append(textFieldValue.text)
                 spans.forEach { span ->
                     addStyle(
@@ -217,9 +272,12 @@ fun EditNoteScreen(
                         span.end
                     )
                 }
-            }
+            }*/
+
             Text(
-                annotatedPreview,
+                //annotatedPreview,
+                text = buildAnnotatedContent(content, spans),
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
@@ -229,3 +287,24 @@ fun EditNoteScreen(
 }
 
 enum class Style { BOLD, ITALIC }
+
+fun buildAnnotatedContent(
+    text: String,
+    spans: List<TextSpan>
+): AnnotatedString {
+    val builder = AnnotatedString.Builder(text)
+
+    spans.forEach { span ->
+        builder.addStyle(
+            SpanStyle(
+                fontWeight = if (span.bold) FontWeight.Bold else null,
+                fontStyle = if (span.italic) FontStyle.Italic else null,
+                fontSize = span.fontSize.sp
+            ),
+            span.start,
+            span.end
+        )
+    }
+
+    return builder.toAnnotatedString()
+}

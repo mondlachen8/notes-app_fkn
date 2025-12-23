@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.example.notes_fkn.model.NotesViewModel
 import com.example.notes_fkn.ui.editnote.EditNoteScreen
 import com.example.notes_fkn.ui.navigation.Routes
+import com.example.notes_fkn.ui.notedetail.NoteDetailScreen
 import com.example.notes_fkn.ui.noteslist.NotesList
 
 @Composable
@@ -34,7 +35,26 @@ fun NotesApp() {
                     navController.navigate(Routes.EDIT_NOTE)
                 },
                 onNoteClick = { note ->
-                    navController.navigate("${Routes.EDIT_NOTE}/${note.id}")
+                    //navController.navigate("${Routes.EDIT_NOTE}/${note.id}")
+                    navController.navigate("${Routes.NOTE_DETAIL}/${note.id}")
+                }
+            )
+        }
+
+        composable(
+            route = "${Routes.NOTE_DETAIL}/{noteId}",
+            arguments = listOf(
+                navArgument("noteId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val noteId = backStackEntry.arguments!!.getLong("noteId")
+            val note = viewModel.getNoteById(noteId)
+
+            NoteDetailScreen(
+                note = note!!, // must not be null
+                onBack = { navController.popBackStack() },
+                onEdit = {
+                    navController.navigate("${Routes.EDIT_NOTE}/${noteId}")
                 }
             )
         }
@@ -44,7 +64,10 @@ fun NotesApp() {
                 note = null,
                 onSave = { savedNote ->
                     viewModel.saveNote(savedNote)
-                    navController.popBackStack()
+                    navController.navigate("${Routes.NOTE_DETAIL}/${savedNote.id}") {
+                        popUpTo(Routes.NOTES_LIST)
+                    }
+                    //navController.popBackStack()
                 },
                 onCancel = {
                     navController.popBackStack()
