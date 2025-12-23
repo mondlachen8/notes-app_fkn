@@ -56,7 +56,7 @@ fun EditNoteScreen(
     var textSize by rememberSaveable { mutableStateOf(16f) }
 
     // Fett-/Kursiv-Spans
-    var spans by remember { mutableStateOf(listOf<TextSpan>())}
+    var spans by remember { mutableStateOf(note?.spans ?: listOf())}
 
     // Fett/Kursiv Status für gesamten Text (vereinfacht)
     var isBold by rememberSaveable { mutableStateOf(false) }

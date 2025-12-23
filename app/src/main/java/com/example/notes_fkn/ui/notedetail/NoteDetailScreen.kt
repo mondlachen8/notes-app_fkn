@@ -52,7 +52,8 @@ fun NoteDetailScreen(
         mutableStateOf(note.content)
     }
     val annotated = remember(content, note.spans) {
-        buildTodoAnnotatedString(content, note.spans)
+        //buildTodoAnnotatedString(content, note.spans)
+        buildAnnotatedContentWithTodos(content, note.spans)
     }
 
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -187,6 +188,53 @@ fun buildTodoAnnotatedString(
             if (index < lines.lastIndex) {
                 append("\n")
             }
+        }
+    }
+}
+
+fun buildAnnotatedContentWithTodos(
+    content: String,
+    spans: List<TextSpan>
+): AnnotatedString {
+    return buildAnnotatedString {
+        val lines = content.split("\n")
+
+        var offset = 0
+        lines.forEachIndexed { index, line ->
+            val lineStart = offset
+            append(line)
+            val lineEnd = offset + line.length
+
+            // TODO markieren
+            val trimmed = line.trimStart()
+            if (trimmed.startsWith("[ ]") || trimmed.startsWith("[x]")) {
+                addStringAnnotation(
+                    tag = "TODO",
+                    annotation = index.toString(),
+                    start = lineStart,
+                    end = lineEnd
+                )
+            }
+
+            // Formatierungen aus TextSpan anwenden
+            spans.filter { it.start in lineStart..lineEnd || it.end in lineStart..lineEnd }
+                .forEach { span ->
+                    val spanStart = span.start.coerceIn(lineStart, lineEnd)
+                    val spanEnd = span.end.coerceIn(lineStart, lineEnd)
+
+                    addStyle(
+                        style = SpanStyle(
+                            fontWeight = if (span.bold) FontWeight.Bold else FontWeight.Normal,
+                            fontStyle = if (span.italic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                            fontSize = span.fontSize.sp
+                        ),
+                        start = spanStart,
+                        end = spanEnd
+                    )
+                }
+
+            offset += line.length + 1 // +1 wegen \n
+            if (index < lines.lastIndex) append("\n")
         }
     }
 }
