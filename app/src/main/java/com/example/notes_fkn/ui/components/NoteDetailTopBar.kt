@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,12 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.room.Delete
 
 @Composable
 fun NoteDetailTopBar(
     title: String,
     onBack: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Surface (
         tonalElevation = 3.dp
@@ -37,7 +40,7 @@ fun NoteDetailTopBar(
                 )
             )
 
-            Row(
+            /**Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
@@ -66,6 +69,36 @@ fun NoteDetailTopBar(
                         imageVector = Icons.Filled.Edit,
                         contentDescription = "Bearbeiten"
                     )
+                }
+            }*/
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Zurück")
+                }
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Bearbeiten")
+                    }
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                    }
                 }
             }
         }

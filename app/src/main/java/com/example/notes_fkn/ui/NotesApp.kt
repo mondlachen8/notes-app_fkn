@@ -1,6 +1,7 @@
 package com.example.notes_fkn.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,6 +24,7 @@ fun NotesApp() {
     //val viewModel: NotesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val viewModel: NotesViewModel = viewModel()
     val notes by viewModel.notes.collectAsState()
+
 
     NavHost(
         navController = navController,
@@ -49,16 +51,31 @@ fun NotesApp() {
                 navArgument("noteId") { type = NavType.LongType }
             )
         ) { backStackEntry ->
-            val noteId = backStackEntry.arguments!!.getLong("noteId")
-            val note = viewModel.getNoteById(noteId)
-
-            NoteDetailScreen(
-                note = note!!, // must not be null
-                onBack = { navController.popBackStack() },
-                onEdit = {
-                    navController.navigate("${Routes.EDIT_NOTE}/${noteId}")
-                }
-            )
+            val noteId = backStackEntry.arguments?.getLong("noteId")
+            val note = noteId?.let { viewModel.getNoteById(it) }
+            if (note != null) {
+                NoteDetailScreen(
+                    note = note, // must not be null
+                    onBack = { navController.popBackStack() },
+                    onEdit = {
+                        navController.navigate("${Routes.EDIT_NOTE}/${noteId}")
+                    },
+                    onDeleteConfirmed = {
+                        viewModel.deleteNote(noteId)
+                        navController.navigate(Routes.NOTES_LIST){
+                            popUpTo(Routes.NOTES_LIST) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
+            } else{
+                //Note existiert nicht mehr
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.NOTES_LIST) {
+                        popUpTo(Routes.NOTES_LIST){inclusive = true}
+                    }}
+            }
         }
 
         composable(Routes.EDIT_NOTE) {
