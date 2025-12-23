@@ -177,7 +177,7 @@ fun EditNoteScreen(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Titel") },
-                enabled = !note?.isPinned!!,
+                enabled = note?.isPinned?.not() ?: true,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
