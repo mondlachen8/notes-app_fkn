@@ -65,9 +65,9 @@ fun NoteDetailScreen(
                 onBack = {onBack(content)},
                 onEdit = {onEdit(content)},
                 //onDelete = onDeleteConfirmed
-                onDelete = {
-                    showDeleteDialog = true
-                }
+                onDelete = if (note.isPinned) null else {{
+                        showDeleteDialog = true
+                    }}
             )
         }
     ) { paddingValues ->

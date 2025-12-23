@@ -75,7 +75,7 @@ fun EditNoteScreen(
 
         textFieldValue = textFieldValue.copy(text = builder.toAnnotatedString().text)
     }*/
-    fun applyStyleToSelection(
+    /**fun applyStyleToSelection(
         bold: Boolean = false,
         italic: Boolean = false,
         fontSize: Float = 16f
@@ -92,7 +92,7 @@ fun EditNoteScreen(
             italic = italic,
             fontSize = fontSize
         )
-    }
+    }*/
     fun toggleStyle(
         style: Style
     ) {
@@ -169,15 +169,6 @@ fun EditNoteScreen(
             EditNoteTopBar(
                 isEditing = note != null,
                 onSaveClick = {
-                    /**val editedNote = note?.copy(
-                        title = title,
-                        content = content
-                    ) ?: Note(
-                        id = System.currentTimeMillis(),
-                        title = title,
-                        content = content
-                    )
-                    onSave(editedNote)*/
                     val annotatedText = buildAnnotatedString {
                         append(textFieldValue.text)
                         spans.forEach { span ->
@@ -221,6 +212,7 @@ fun EditNoteScreen(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Titel") },
+                enabled = !note?.isPinned!!,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )

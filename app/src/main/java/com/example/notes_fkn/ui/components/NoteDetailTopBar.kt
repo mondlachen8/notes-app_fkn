@@ -25,7 +25,7 @@ fun NoteDetailTopBar(
     title: String,
     onBack: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete:( () -> Unit)? = null
 ) {
     Surface (
         tonalElevation = 3.dp
@@ -96,8 +96,10 @@ fun NoteDetailTopBar(
                     IconButton(onClick = onEdit) {
                         Icon(Icons.Default.Edit, contentDescription = "Bearbeiten")
                     }
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        }
                     }
                 }
             }
