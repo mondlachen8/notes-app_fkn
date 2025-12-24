@@ -61,16 +61,19 @@ fun NoteDetailScreen(
     fun shareAsText() {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, note.content)
+            putExtra(Intent.EXTRA_TEXT, content)
             type = "text/plain"
         }
         context.startActivity(Intent.createChooser(sendIntent, "Notiz teilen"))
     }
 
     fun shareAsFile() {
-        val fileName = "$note.title.ifBlank { \"Notiz\" }.txt"
+        val safeTitle = note.title
+            .ifBlank { "Notiz" }
+            .filter { it.isLetterOrDigit() || it == ' ' }
+        val fileName = "$safeTitle.txt"
         val file = File(context.cacheDir, fileName)
-        file.writeText(note.content)
+        file.writeText(content)
 
         val uri = FileProvider.getUriForFile(
             context,
